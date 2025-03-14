@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang='en'>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/style_index.css">
+    <title>{{ title }}</title>
+</head>
+
+
+<body>
+
+    <header class="header">
+        <div class="header__left">
+            <a href="https://lms.yandex.ru/" target="_blank" title="Яндекс ЛМС"><b>Я</b>ндекс Лицей.<b> Forum</b></a>
+        </div>
+        <div class="header__right">
+            <nav class="header__user-nav">
+                <a href="" target="_blank"><img
+                        src="images/notifications_unread_40dp_000000_FILL0_wght400_GRAD0_opsz40.png" alt="Notification"
+                        width="30px"></a>
+
+                <div class="user-menu">
+                    <a href="" target="_blank">
+                        <img src="images/account_circle_40dp_000000_FILL0_wght400_GRAD0_opsz40.png" alt="User-icon"
+                            width="40px">
+                    </a>
+                    <a href="" target="_blank">Noname</a>
+
+                </div>
+            </nav>
+        </div>
+    </header>
+
+
+    <div class="path">
+        Forum &rarr; {{ path-to-post | site-section }}
+    </div>
+
+    <div class="page-content">
+        <main role="main" class="container">
+            {% block content %}
+            {% endblock %}
+        </main>
+
+        <div  class="sidebar">
+            <div class="sidebar__group">
+                <h2>Популярные темы</h2>
+                <ul class="sidebar__menu">
+                    {% for section in sections %}
+                    <li><a href="{{ section.url }}">{{ section.title }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+    </div>
+
+    <footer class="footer">
+        <div class="footer__left">
+            &copy; 2025. Все права защищены.
+        </div>
+        <div class="footer__right">
+            <a href="">Политика конфиденциальности</a>
+        </div>
+    </footer>
+
+
+</body>
+
+</html>
