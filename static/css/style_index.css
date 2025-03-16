@@ -67,19 +67,17 @@ header {
     margin-bottom: 2.4rem;
 }
 
+.page-content {
+    display: flex;
+    justify-content: flex-end;
+}
+
 .sidebar {
-    float: right;
     width: 300px;
     background-color: rgba(255, 153, 0, 0.2);
     font-size: 18px;
     padding: 1%;
-    top: 0;
-    bottom: 0;
     height: 100vh;
-}
-
-.page-content {
-    display: flex;
 }
 
 .container {
