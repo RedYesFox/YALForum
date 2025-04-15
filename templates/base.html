@@ -4,54 +4,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="../static/css/style_index.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style_index.css') }}">
     <title>{{ title }}</title>
+    {% block extra_styles %}
+    {% endblock %}
 </head>
 
 
 <body>
-
     <header class="header">
         <div class="header__left">
-            <a href="https://lms.yandex.ru/" target="_blank" title="Яндекс ЛМС"><b>Я</b>ндекс Лицей.<b> Forum</b></a>
+            <a href="/" target="_self" title="Яндекс ЛМС">Яндекс Лицей.<b>
+                    Forum</b>*</a>
         </div>
         <div class="header__right">
             <nav class="header__user-nav">
-                <a href="" target="_blank"><img
+                <!-- <a href="" target="_blank"><img
                         src="/static/images/notifications_unread_40dp_000000_FILL0_wght400_GRAD0_opsz40.png"
-                        alt="Notification" width="30px"></a>
+                        alt="Notification" width="30px"></a> -->
 
                 <div class="user-menu">
-                    <a href="" target="_blank">
-                        <img src="/static/images/account_circle_40dp_000000_FILL0_wght400_GRAD0_opsz40.png" alt="User-icon"
-                            width="40px">
-                    </a>
-                    <a href="" target="_blank">Noname</a>
-
+                    {% if current_user.is_authenticated %}
+                        <a href="#" id="user-name">{{current_user.surname.capitalize()[0]}}. {{ current_user.name }}</a>
+                        <div class="dropdown-menu">
+                            <a href="/profile">Профиль</a>
+                            <a href="/change_account">Сменить аккаунт</a>
+                            <a href="/logout">Выйти</a>
+                        </div>
+                    {% else %}
+                        <a href="/login" class="login-button">Log In</a>
+                    {% endif %}
                 </div>
             </nav>
         </div>
     </header>
 
+    <div class="path">
+        {% for breadcrumb in breadcrumbs %}
+            {% if not loop.last %}
+                <a href="{{ breadcrumb.url }}">{{ breadcrumb.title }}</a> &rarr;
+            {% else %}
+                <span>{{ breadcrumb.title }}</span>
+            {% endif %}
+        {% endfor %}
+    </div>
+
     <main role="main" class="container">
         {% block content %}
 
-        <div class="path">
-            <a href="/main">Forum &rarr; <a href="{{ path_to_post.url }}">{{ path_to_post.title }}
+        <div class="page-content">
         </div>
 
-        <div class="page-content">
-
-            <div class="sidebar">
-                <div class="sidebar__group">
-                    <h2>Популярные темы</h2>
-                    <ul class="sidebar__menu">
-                        {% for section in sections %}
-                        <li><a href="{{ section.url }}">{{ section.title }}</a></li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            </div>
+        <div class="sidebar">
+            <h2>Популярные темы</h2>
+            <ul class="sidebar__menu">
+                {% for section in sections %}
+                <li><a href="{{ section.url }}">{{ section.title }}</a></li>
+                {% endfor %}
+            </ul>
 
         </div>
         {% endblock %}
@@ -59,14 +69,41 @@
 
     <footer class="footer">
         <div class="footer__left">
-            &copy; 2025. Все права защищены.
+            &copy; 2025. Все права защищены.<br>
+            Политика конфиденциальности
+            <p>«Форум.ЯндекЛицей — это независимый учебный проект, созданный учащимся Яндекс Лицея. Он не является
+                официальным продуктом компании Яндекс и не аффилирован с ней.»</p>
         </div>
         <div class="footer__right">
-            <a href="">Политика конфиденциальности</a>
+            <a href="/about">О нас</a>
+            <a href="/contacts">Контакты</a>
+            <a href="/rules">Правила</a>
+            <a href="/faq">FAQ</a>
+            <a href="/terms">Условия использования</a>
+            <a href="/privacy">Политика конфиденциальности</a>
+            <a href="/help">Помощь</a>
+
         </div>
     </footer>
 
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const userName = document.getElementById("user-name");
+            const menu = document.querySelector(".dropdown-menu");
 
+            userName.addEventListener("click", function (event) {
+                event.preventDefault();
+                menu.classList.toggle("active");
+            });
+
+            // Закрытие меню при клике вне его
+            document.addEventListener("click", function (event) {
+                if (!userName.contains(event.target) && !menu.contains(event.target)) {
+                    menu.classList.remove("active");
+                }
+            });
+        });
+    </script>
 </body>
 
 </html>
