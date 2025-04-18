@@ -10,15 +10,18 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
     __tablename__ = 'users'
 
     id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True, autoincrement=True)
-    surname = sqlalchemy.Column(sqlalchemy.String, nullable=True)  # Фамилия
-    name = sqlalchemy.Column(sqlalchemy.String, nullable=True)  # Имя
-    age = sqlalchemy.Column(sqlalchemy.Integer)  # Возраст
-    position = sqlalchemy.Column(sqlalchemy.String, nullable=False)  # Должность
-    speciality = sqlalchemy.Column(sqlalchemy.String, nullable=True)  # Специализация
-    address = sqlalchemy.Column(sqlalchemy.String, nullable=True)  # Адрес
+    username = sqlalchemy.Column(sqlalchemy.String, nullable=True)  # Логин
     email = sqlalchemy.Column(sqlalchemy.String, index=True, unique=True, nullable=True)  # Почта
     hashed_password = sqlalchemy.Column(sqlalchemy.String, nullable=True)  # Пароль хэшированный
-    # photo = sqlalchemy.Column(sqlalchemy.String, nullable=True)  # Фото
+
+    surname = sqlalchemy.Column(sqlalchemy.String, nullable=True)  # Фамилия
+    name = sqlalchemy.Column(sqlalchemy.String, nullable=True)  # Имя
+    age = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)  # Возраст
+    position = sqlalchemy.Column(sqlalchemy.String, nullable=True)  # Должность
+    speciality = sqlalchemy.Column(sqlalchemy.String, nullable=True)  # Специализация
+    address = sqlalchemy.Column(sqlalchemy.String, nullable=True)  # Адрес
+
+    photo = sqlalchemy.Column(sqlalchemy.String, nullable=True)  # Фото
     created_date = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now)  # Дата создания аккаута
 
     def __repr__(self):

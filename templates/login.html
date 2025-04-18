@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<form action="" method="post" novalidate>
+    {{ form.hidden_tag() }}
+    <p>
+        {{ form.email.label }}<br>
+        {{ form.email(class="form-control") }}<br>
+        {% for error in form.email.errors %}
+            <div class="alert alert-danger" role="alert">
+                {{ error }}
+            </div>
+        {% endfor %}
+    </p>
+    <p>
+        {{ form.password.label }}<br>
+        {{ form.password(class="form-control", type="password") }}
+        {% for error in form.password.errors %}
+            <div class="alert alert-danger" role="alert">
+                {{ error }}
+            </div>
+        {% endfor %}
+    </p>
+    <p class="text-message">{{ message }}</p>
+    <div class="form-check">
+        {{ form.remember_me() }}
+        {{ form.remember_me.label }}
+    </div>
+    <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
+    <p>Нет аккаунта? <a href="/registration">Зарегистрируйтесь</a></p>
+</form>
+{% block extra_styles %}
+    <style>
+        .text-message {
+            color: red;
+            font-size: 12px;
+        }
+        .form-check {
+            width: 50%
+        }
+        .form-check input {
+            width: auto;
+        }
+        label {
+            width: 100%;
+        }
+    </style>
+{% endblock %}
+{% endblock %}

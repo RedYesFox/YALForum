@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block content %}
+<form action="" method="post" novalidate>
+    {{ form.hidden_tag() }}
+    <p>
+        {{ form.email.label }}
+        {{ form.email(class="form-control", type="email") }}<br>
+        {% for error in form.email.errors %}
+            <div class="alert alert-danger" role="alert">
+                {{ error }}
+            </div>
+        {% endfor %}
+    </p>
+    <p>
+        {{ form.password.label }}
+        <div class="password-container">
+            {{ form.password(class="form-control password-field", type="password") }}
+            <button type="button" class="toggle-password" onclick="togglePassword(this)">
+                🙉
+            </button>
+        </div>
+        {% for error in form.password.errors %}
+            <div class="alert alert-danger" role="alert">
+                {{ error }}
+            </div>
+        {% endfor %}
+    </p>
+
+    <p>
+        {{ form.confirm_password.label }}
+        <div class="password-container">
+            {{ form.confirm_password(class="form-control password-field", type="password") }}
+            <button type="button" class="toggle-password" onclick="togglePassword(this)">
+                🙉
+            </button>
+        </div>
+        {% for error in form.confirm_password.errors %}
+            <div class="alert alert-danger" role="alert">
+                {{ error }}
+            </div>
+        {% endfor %}
+    </p>
+    <p>
+        {{ form.username.label }}
+        {{ form.username(class="form-control") }}<br>
+        {% for error in form.username.errors %}
+            <div class="alert alert-danger" role="alert">
+                {{ error }}
+            </div>
+        {% endfor %}
+    </p>
+
+    <div>{{ message }}</div>
+    <p>{{ form.submit(type="submit", class="btn btn-primary") }}</p>
+    {{ error }}
+    <p>Уже есть аккаунт? <a href="/login">Войти</a></p>
+</form>
+{% block extra_style %}
+    <style>
+        .password-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .password-field {
+            width: 100%;
+            padding-right: 40px;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 0;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            width: 40px;
+        }
+        button {
+            width: 100%;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #7f7f8098;
+        }
+    </style>
+    <script>
+        function togglePassword(button) {
+            let input = button.previousElementSibling;
+            if (input.type === "password") {
+                input.type = "text";
+                button.textContent = "🙈";
+            } else {
+                input.type = "password";
+                button.textContent = "🙉";
+            }
+        }
+    </script>
+
+{% endblock %}
+
+{% endblock %}
