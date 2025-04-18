@@ -1,8 +1,10 @@
 import datetime
 import logging
+import os
 from flask import Flask, render_template, redirect, request
 from flask_login import current_user, login_required, LoginManager, login_user, logout_user
 from flask_restful import abort
+from werkzeug.utils import secure_filename
 
 from data import db_session
 from data.add_article import ArticlesForm
@@ -16,6 +18,7 @@ application.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
 application.config['PERMANENT_SESSION_LIFETIME'] = datetime.timedelta(
     days=10
 )
+application.config['UPLOAD_FOLDER'] = os.path.join('static', 'uploads')
 
 login_manager = LoginManager()
 login_manager.init_app(application)
@@ -31,7 +34,6 @@ sections = [
     {'title': 'Добавить статью', 'url': '/forum/articles/add'},
     {'title': 'Редактирование статьи', 'url': '/forum/articles/edit'},
     {'title': 'Удалить статью', 'url': '/forum/articles/delete'},
-    {'title': 'Войти', 'url': '/login'},
     {'title': 'Выход', 'url': '/logout'}
 ]
 
@@ -73,7 +75,7 @@ def forum_main():
     articles = db_sess.query(Articles).all()
     breadcrumbs = get_breadcrumbs(request.path)
     return render_template("forum.html",
-                           news=articles,
+                           articles=articles,
                            breadcrumbs=breadcrumbs,
                            sections=sections,
                            title='Форум')
@@ -264,6 +266,7 @@ def registration():
                 speciality=form.speciality.data,
                 address=form.address.data
             )
+
             user.set_password(form.password.data)
             db_sess.add(user)
             db_sess.commit()

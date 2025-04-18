@@ -25,6 +25,7 @@
 
                 <div class="user-menu">
                     {% if current_user.is_authenticated %}
+                        <!-- <img src="{{ url_for('static', filename=current_user.photo) }}" alt="Фото профиля"> -->
                         <a href="#" id="user-name">{{current_user.surname.capitalize()[0]}}. {{ current_user.name }}</a>
                         <div class="dropdown-menu">
                             <a href="/profile">Профиль</a>
@@ -50,17 +51,23 @@
     </div>
 
     <main role="main" class="container">
+        <div class="sidebar__left">
+            {% for section in sections %}
+            <a href="{{ section.url }}">{{ section.title }}</a><br>
+            {% endfor %}
+
+        </div>
         {% block content %}
 
         <div class="page-content">
         </div>
 
-        <div class="sidebar">
+        <div class="sidebar__right">
             <h2>Популярные темы</h2>
             <ul class="sidebar__menu">
-                {% for section in sections %}
+                <!-- {% for section in sections %}
                 <li><a href="{{ section.url }}">{{ section.title }}</a></li>
-                {% endfor %}
+                {% endfor %} -->
             </ul>
 
         </div>
@@ -69,19 +76,15 @@
 
     <footer class="footer">
         <div class="footer__left">
-            &copy; 2025. Все права защищены.<br>
-            Политика конфиденциальности
-            <p>«Форум.ЯндекЛицей — это независимый учебный проект, созданный учащимся Яндекс Лицея. Он не является
+            &copy; 2025. ForumLyceum<br>
+            <p>«ЯндекЛицей.Forum — это независимый учебный проект, созданный учащимся Яндекс Лицея. Он не является
                 официальным продуктом компании Яндекс и не аффилирован с ней.»</p>
         </div>
         <div class="footer__right">
             <a href="/about">О нас</a>
-            <a href="/contacts">Контакты</a>
-            <a href="/rules">Правила</a>
             <a href="/faq">FAQ</a>
             <a href="/terms">Условия использования</a>
             <a href="/privacy">Политика конфиденциальности</a>
-            <a href="/help">Помощь</a>
 
         </div>
     </footer>

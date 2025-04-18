@@ -1,6 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import EmailField, PasswordField, SubmitField, IntegerField, \
     StringField, RadioField
+from flask_wtf.file import FileField, FileAllowed
 from wtforms.validators import DataRequired, Email
 
 
@@ -15,4 +16,8 @@ class RegisterForm(FlaskForm):
                           choices=[('student', 'Ученик'), ('teacher', 'Учитель')])
     speciality = StringField('Специализация', validators=[DataRequired()])
     address = StringField('Адрес', validators=[DataRequired()])
+    # profile_picture = FileField('Фото профиля (необязательно)',
+    #                             validators=[FileAllowed(['jpg', 'png', 'jpeg'],
+    #                                                     'Только изображения!')])
+
     submit = SubmitField('Зарегистрироваться')
