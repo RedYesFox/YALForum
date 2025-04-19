@@ -2,6 +2,40 @@
 
 {% block content %}
 <div class="page-content">
+    <!-- поиск по теме, тегам и фильтры (например дата, автор) -->
+
+    <form method="get" action="{{ url_for('forum_main') }}" class="mb-3">
+        <input type="text" name="q" placeholder="Поиск..." class="form-control"
+               value="{{ request.args.get('q', '') }}" style="max-width: 200px">
+
+        <select name="author" class="form-select" style="max-width: 180px;">
+            <option value="">Все авторы</option>
+            {% for u in users %}
+                <option value="{{ u.username }}" {% if request.args.get('author') == u.username %}selected{% endif %}>
+                {{ u.username }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <select name="category" class="form-select" style="display: inline-block; width: 200px;">
+            <option value="">Все категории</option>
+            {% for cat in all_categories %}
+              <option value="{{ cat }}" {% if request.args.get('category') == cat %}selected{% endif %}>
+                #{{ cat }}
+              </option>
+            {% endfor %}
+        </select>
+
+        <select name="sort" class="form-select" style="max-width: 180px;">
+          <option value="newest" {% if request.args.get('sort') == 'newest' %}selected{% endif %}>Сначала новые</option>
+          <option value="oldest" {% if request.args.get('sort') == 'oldest' %}selected{% endif %}>Сначала старые</option>
+        </select>
+
+        <button type="submit" class="btn btn-success">Применить</button>
+        <button href="{{ url_for('forum_main') }}" class="btn btn-warning">Очистить</button>
+      </form>
+
+
     {% for item in articles %}
         <div class="article">
             <div class="user-info">
@@ -16,13 +50,14 @@
                     <a href="/profile/{{ item.user.username }}">{{ item.user.username }}</a>
                 </div>
                 <div class="user-info__right">
-                    {{ item.created_date.date().strftime('%d.%m.%Y') }}
+                    {{ item.created_date|time_ago }}
                 </div>
             </div>
 
             <a href="/forum/articles/{{ item.id }}"><h2>{{ item.title }}</h2></a>
             <h4>#{{ item.category }}</h4>
             <!-- {{ item.content.replace('\n', '<br>')|safe }} -->
+            {{ item.created_date.date().strftime('%d.%m.%Y') }}
             {% if current_user.is_authenticated and current_user == item.user %}
             <div class="buttons">
                 <a href="/forum/articles/edit/{{ item.id }}" class="btn btn-warning">
@@ -56,10 +91,15 @@
             padding: 10px;
             margin-bottom: 1rem;
         }
+        .article:hover {
+            border: 1px solid rgba(132, 179, 0, 0.6);
+        }
+
         .buttons {
             display: flex;
             gap: 1rem;
         }
+
         .buttons a {
             width: fit-content;
             font-size: 14px;
@@ -74,6 +114,20 @@
             display: flex;
             align-items: center;
             gap: 1rem;
+        }
+        /* .user-info__right {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            align-items: flex-end;
+        } */
+
+        form {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            width: 100%;
+        }
 
     </style>
 {% endblock %}

@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-content">
+    <div class="user-info">
+        <div class="user-info__left">
+            {% if article.user.photo %}
+            <div style="width: 40px; height: 40px; overflow: hidden; border-radius: 50%;">
+                <img src="{{ url_for('static', filename=article.user.photo) }}"
+                    alt="Фото профиля"
+                    style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            {% endif %}
+            <a href="/profile/{{ article.user.username }}">{{ article.user.username }}</a>
+        </div>
+        <div class="user-info__right">
+            {{ article.created_date|time_ago }} | {{ article.created_date.date().strftime('%d.%m.%Y') }}
+        </div>
+    </div>
+    <h1>{{ article.title }}</h1>
+    <p>{{ article.content }}</p>
+    <hr>
+    <h3>Комментарии</h3>
+
+    {% for comment in comments %}
+        <div class="comment" style="margin-bottom: 1rem; background: #1e1e1e; padding: 0.5rem; border-radius: 8px;">
+            <div style="font-size: 14px; color: #aaa;">
+                <b>{{ comment.user.username }}</b> — {{ comment.created_date|time_ago }}
+            </div>
+            <div>{{ comment.content }}</div>
+        </div>
+    {% else %}
+        <p style="color: gray;">Комментариев пока нет.</p>
+    {% endfor %}
+
+    {% if current_user.is_authenticated %}
+        <form method="post">
+            {{ form.hidden_tag() }}
+            <div class="mb-3">
+                {{ form.content(class="form-control", rows=3, placeholder="Оставьте комментарий...", style="resize: none;") }}
+            </div>
+            {{ form.submit(class="btn btn-primary") }}
+        </form>
+    {% else %}
+        <p><a href="/login">Войдите</a>, чтобы оставить комментарий.</p>
+    {% endif %}
+
+
+</div>
+
+{% block extra_styles %}
+    <style>
+        .page-content {
+            background-color: rgb(23,23,23);
+            border: 1px solid rgba(132, 179, 0, 0.2);
+            padding: 1rem;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            justify-content: space-between;
+        }
+        .user-info__left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+
+    </style>
+
+{% endblock %}
+{% endblock %}

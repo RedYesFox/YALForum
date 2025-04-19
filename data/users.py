@@ -20,6 +20,7 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
     position = sqlalchemy.Column(sqlalchemy.String, nullable=True)  # Должность
     speciality = sqlalchemy.Column(sqlalchemy.String, nullable=True)  # Специализация
     address = sqlalchemy.Column(sqlalchemy.String, nullable=True)  # Адрес
+    about = sqlalchemy.Column(sqlalchemy.Text, nullable=True)  # О себе
 
     photo = sqlalchemy.Column(sqlalchemy.String, nullable=True)  # Фото
     created_date = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now)  # Дата создания аккаута
