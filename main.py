@@ -17,6 +17,8 @@ from data.registration_form import RegisterForm
 from data.users import User
 from data.comment_form import CommentForm
 from data.comments import Comment
+from data.feedback_form import FeedbackForm
+from data.feedbacks import Feedback
 
 application = Flask(__name__)
 application.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
@@ -37,9 +39,10 @@ sections = [
     {'title': 'Контакты', 'url': '/contacts'},
     {'title': 'Регистрация', 'url': '/registration'},
     {'title': 'Авторизация', 'url': '/login'},
+    {'title': 'Обратная связь', 'url': '/feedback'},
     {'title': 'Профиль пользователя', 'url': '/profile'},
     {'title': 'Редактирование темы', 'url': '/forum/articles/edit'},
-    {'title': 'Удалить тему', 'url': '/forum/articles/delete'},
+    {'title': 'Удалить тему', 'url': '/forum/articles/delete'}
 ]
 
 sections_limiter = -3
@@ -70,6 +73,28 @@ def about():
                            title='О нас',
                            breadcrumbs=breadcrumbs,
                            sections=sections[:sections_limiter])
+
+
+@application.route('/feedback',  methods=['GET', 'POST'])
+def feedback():
+    db_sess = db_session.create_session()
+    breadcrumbs = get_breadcrumbs(request.path)
+
+    form = FeedbackForm()
+    if form.validate_on_submit() and current_user.is_authenticated:
+        feedback = Feedback(
+            content=form.content.data,
+            user_id=current_user.id
+        )
+        db_sess.add(feedback)
+        db_sess.commit()
+        return redirect('/feedback')
+
+    return render_template('feedback.html',
+                           title='Feedback',
+                           breadcrumbs=breadcrumbs,
+                           sections=sections[:sections_limiter],
+                           form=form)
 
 
 @application.route('/forum')

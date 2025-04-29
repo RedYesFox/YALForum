@@ -6,34 +6,38 @@
 
     <form method="get" action="{{ url_for('forum_main') }}" class="mb-3">
         <input type="text" name="q" placeholder="Поиск..." class="form-control"
-               value="{{ request.args.get('q', '') }}" style="max-width: 200px">
+               value="{{ request.args.get('q', '') }}" style="width: 100%">
 
-        <select name="author" class="form-select" style="max-width: 180px;">
-            <option value="">Все авторы</option>
-            {% for u in users %}
-                <option value="{{ u.username }}" {% if request.args.get('author') == u.username %}selected{% endif %}>
-                {{ u.username }}
+        <div class="search-filters">
+            <select name="author" class="form-select"">
+                <option value="">Все авторы</option>
+                {% for u in users %}
+                    <option value="{{ u.username }}" {% if request.args.get('author') == u.username %}selected{% endif %}>
+                    {{ u.username }}
+                    </option>
+                {% endfor %}
+            </select>
+
+            <select name="category" class="form-select" style="display: inline-block;">
+                <option value="">Все категории</option>
+                {% for cat in all_categories %}
+                <option value="{{ cat }}" {% if request.args.get('category') == cat %}selected{% endif %}>
+                    #{{ cat }}
                 </option>
-            {% endfor %}
-        </select>
+                {% endfor %}
+            </select>
 
-        <select name="category" class="form-select" style="display: inline-block; width: 200px;">
-            <option value="">Все категории</option>
-            {% for cat in all_categories %}
-              <option value="{{ cat }}" {% if request.args.get('category') == cat %}selected{% endif %}>
-                #{{ cat }}
-              </option>
-            {% endfor %}
-        </select>
+            <select name="sort" class="form-select">
+            <option value="newest" {% if request.args.get('sort') == 'newest' %}selected{% endif %}>Сначала новые</option>
+            <option value="oldest" {% if request.args.get('sort') == 'oldest' %}selected{% endif %}>Сначала старые</option>
+            </select>
 
-        <select name="sort" class="form-select" style="max-width: 180px;">
-          <option value="newest" {% if request.args.get('sort') == 'newest' %}selected{% endif %}>Сначала новые</option>
-          <option value="oldest" {% if request.args.get('sort') == 'oldest' %}selected{% endif %}>Сначала старые</option>
-        </select>
-
-        <button type="submit" class="btn btn-success">Применить</button>
-        <button href="{{ url_for('forum_main') }}" class="btn btn-warning">Очистить</button>
-      </form>
+            <div class="buttons">
+                <button type="submit" class="btn btn-success">Применить</button>
+                <button type="button" class="btn btn-warning" onclick="window.location.href='{{ url_for('forum_main') }}'">Очистить</button>
+            </div>
+        </div>
+    </form>
 
 
     {% for item in articles %}
@@ -124,9 +128,20 @@
 
         form {
             display: flex;
+            flex-direction: column;
             gap: 1rem;
             margin-bottom: 1rem;
             width: 100%;
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+            border: 1px solid rgba(132, 179, 0, 0.2);
+        }
+
+        .search-filters {
+            display: flex;
+            width: 100%;
+            gap: 1rem;
+            justify-content: space-between;
         }
 
     </style>

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h3>Обратная связь</h3>
+{% if current_user.is_authenticated %}
+    <form method="post">
+        {{ form.hidden_tag() }}
+        <div class="mb-3">
+            {{ form.content(class="form-control", rows=3, placeholder="Поле для ввода...", style="resize: none;") }}
+        </div>
+        {{ form.submit(class="btn btn-primary") }}
+    </form>
+{% else %}
+    <p><a href="/login">Войдите</a>, чтобы оставить отзыв/пожелание/предложение.</p>
+{% endif %}
+
+{% endblock %}
