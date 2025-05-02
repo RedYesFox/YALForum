@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
+<div class="page-content">
 <form action="" method="post" novalidate>
     {{ form.hidden_tag() }}
     <p>
@@ -56,6 +57,7 @@
     {{ error }}
     <p>Уже есть аккаунт? <a href="/login">Войти</a></p>
 </form>
+</div>
 {% block extra_style %}
     <style>
         .password-container {

@@ -14,57 +14,48 @@
 
 <body>
     <header class="header">
-        <div class="header__left">
-            <a href="/" target="_self" title="Яндекс ЛМС">Яндекс Лицей.<b>
-                    Forum</b>*</a>
-        </div>
-        <div class="header__right">
-            <nav class="header__user-nav">
-                <div class="user-menu">
-                    {% if current_user.is_authenticated %}
-                        {% if current_user.photo %}
-                        <div style="width: 60px; height: 60px; overflow: hidden; border-radius: 50%;">
-                            <img src="{{ url_for('static', filename=current_user.photo) }}"
-                                alt="Фото профиля"
-                                style="width: 100%; height: 100%; object-fit: cover;">
-                        </div>
-                        {% endif %}
-                        <a href="#" id="user-name">{{ current_user.username }}</a>
-                        <div class="dropdown-menu">
-                            {% if current_user.surname and current_user.name %}
-                                <p>{{current_user.surname.capitalize()[0]}}.{{ current_user.name }}</p>
+        <div class="header__top">
+            <div class="header__left">
+                <a href="/" target="_self" title="Яндекс ЛМС">Яндекс Лицей.<b>
+                        Forum</b>*</a>
+            </div>
+            <div class="header__right">
+                <nav class="header__user-nav">
+                    <div class="user-menu">
+                        {% if current_user.is_authenticated %}
+                            {% if current_user.photo %}
+                            <div style="width: 60px; height: 60px; overflow: hidden; border-radius: 50%;">
+                                <img src="{{ url_for('static', filename=current_user.photo) }}"
+                                    alt="Фото профиля"
+                                    style="width: 100%; height: 100%; object-fit: cover;">
+                            </div>
                             {% endif %}
-                            <a href="/profile/{{ current_user.username }}">Профиль</a>
-                            <a href="/change_account">Сменить аккаунт</a>
-                            <a href="/logout">Выйти</a>
-                        </div>
-                    {% else %}
-                        <a href="/login" class="login-button">Log In</a>
-                    {% endif %}
-                </div>
-            </nav>
+                            <a href="#" id="user-name">{{ current_user.username }}</a>
+                            <div class="dropdown-menu">
+                                {% if current_user.surname and current_user.name %}
+                                    <p>{{current_user.surname.capitalize()[0]}}.{{ current_user.name }}</p>
+                                {% endif %}
+                                <a href="/profile/{{ current_user.username }}">Профиль</a>
+                                <a href="/change_account">Сменить аккаунт</a>
+                                <a href="/logout">Выйти</a>
+                            </div>
+                        {% else %}
+                            <a href="/login" class="login-button">Log In</a>
+                        {% endif %}
+                    </div>
+                </nav>
+            </div>
         </div>
-    </header>
 
-    <div class="path">
-        {% for breadcrumb in breadcrumbs %}
-            {% if not loop.last %}
-                <a href="{{ breadcrumb.url }}">{{ breadcrumb.title }}</a> &rarr;
-            {% else %}
-                <span>{{ breadcrumb.title }}</span>
-            {% endif %}
+    </header>
+    <div class="nav__sections">
+        {% for section in sections %}
+        <a href="{{ section.url }}" class="{% if section.url == request.path %}active{% endif %}">
+            {{ section.title }}
+        </a>
         {% endfor %}
     </div>
-
     <main role="main" class="container">
-        <div class="sidebar__left">
-            {% for section in sections %}
-            <a href="{{ section.url }}" class="{% if request.path == section.url %}active{% endif %}">
-                {{ section.title }}
-            </a><br>
-            {% endfor %}
-
-        </div>
         {% block content %}
 
         <div class="page-content">

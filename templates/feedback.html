@@ -1,18 +1,27 @@
 {% extends "base.html" %}
 
 {% block content %}
+<div class="page-content">
 
-<h3>Обратная связь</h3>
-{% if current_user.is_authenticated %}
-    <form method="post">
-        {{ form.hidden_tag() }}
-        <div class="mb-3">
-            {{ form.content(class="form-control", rows=3, placeholder="Поле для ввода...", style="resize: none;") }}
-        </div>
-        {{ form.submit(class="btn btn-primary") }}
-    </form>
-{% else %}
-    <p><a href="/login">Войдите</a>, чтобы оставить отзыв/пожелание/предложение.</p>
-{% endif %}
+    <h3>Оставь свой отзыв, пожелание или предложение.</h3>
+    {% if current_user.is_authenticated %}
+        <form method="post">
+            {{ form.hidden_tag() }}
+            <div class="mb-3">
+                {{ form.content(class="form-control", rows=5, placeholder="Поле для ввода...", oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'") }}
+            </div>
+            {{ form.submit(class="btn btn-primary") }}
+        </form>
+    {% else %}
+        <p><a href="/login">Войдите</a>, чтобы оставить отзыв/пожелание/предложение.</p>
+    {% endif %}
+</div>
 
 {% endblock %}
+
+<!-- <body>
+    <header></header>
+    <div class="nav__sections"></div>
+    <main></main>
+    <footer></footer>
+</body> -->

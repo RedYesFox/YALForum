@@ -32,30 +32,30 @@ login_manager.init_app(application)
 logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
 
 sections = [
-    {'title': 'Главная', 'url': '/'},
+    {'title': 'Профиль', 'url': '/profile'},
     {'title': 'Форум', 'url': '/forum'},
-    {'title': 'Добавить тему', 'url': '/forum/articles/add'},
+    {'title': 'Друзья', 'url': '/friends'},
+    {'title': 'Подписки', 'url': '/subscriptions'},
     {'title': 'О нас', 'url': '/about'},
-    {'title': 'Контакты', 'url': '/contacts'},
+    {'title': 'Обратная связь', 'url': '/feedback'},
+    {'title': 'Главная', 'url': '/'},
+    {'title': 'Добавить тему', 'url': '/forum/articles/add'},
     {'title': 'Регистрация', 'url': '/registration'},
     {'title': 'Авторизация', 'url': '/login'},
-    {'title': 'Обратная связь', 'url': '/feedback'},
     {'title': 'Профиль пользователя', 'url': '/profile'},
     {'title': 'Редактирование темы', 'url': '/forum/articles/edit'},
     {'title': 'Удалить тему', 'url': '/forum/articles/delete'}
 ]
 
-sections_limiter = -3
+sections_limiter = -7
 
 
 @application.route('/')
 def redirect_main():
     db_sess = db_session.create_session()
     users = db_sess.query(User).all()
-    breadcrumbs = get_breadcrumbs(request.path)
     return render_template('main_page.html',
                            title='Главная',
-                           breadcrumbs=breadcrumbs,
                            users=users,
                            sections=sections[:sections_limiter])
 
@@ -68,17 +68,14 @@ def load_user(user_id):
 
 @application.route('/about')
 def about():
-    breadcrumbs = get_breadcrumbs(request.path)
     return render_template('about.html',
                            title='О нас',
-                           breadcrumbs=breadcrumbs,
                            sections=sections[:sections_limiter])
 
 
 @application.route('/feedback',  methods=['GET', 'POST'])
 def feedback():
     db_sess = db_session.create_session()
-    breadcrumbs = get_breadcrumbs(request.path)
 
     form = FeedbackForm()
     if form.validate_on_submit() and current_user.is_authenticated:
@@ -92,7 +89,6 @@ def feedback():
 
     return render_template('feedback.html',
                            title='Feedback',
-                           breadcrumbs=breadcrumbs,
                            sections=sections[:sections_limiter],
                            form=form)
 
@@ -126,16 +122,14 @@ def forum_main():
     else:
         articles_query = articles_query.order_by(Articles.created_date.desc())
     articles = articles_query.all()
-    breadcrumbs = get_breadcrumbs(request.path)
     all_users = db_sess.query(User).order_by(User.username).all()
 
     return render_template("forum.html",
                            articles=articles,
-                           breadcrumbs=breadcrumbs,
                            sections=sections[:sections_limiter],
                            users=all_users,
                            all_categories=all_categories,
-                           title='Форум')
+                           title='Forum')
 
 
 @application.route('/forum/articles/<int:id>', methods=['GET', 'POST'])
@@ -159,19 +153,10 @@ def article(id):
         db_sess.commit()
         return redirect(f'/forum/articles/{id}')
 
-    split_title = article.title.split()
-    part_title = f"{' '.join(
-        split_title[:len(split_title) // 2])}..." if len(split_title) > 4 else article.title
-
-    breadcrumbs = [{'title': 'Главная', 'url': '/'},
-                   {'title': 'Форум', 'url': '/forum'},
-                   {'title': part_title, 'url': f'/forum/articles/{id}'}]
-
     return render_template('article.html',
                            article=article,
                            form=form,
                            comments=comments,
-                           breadcrumbs=breadcrumbs,
                            title=article.title,
                            sections=sections[:sections_limiter])
 
@@ -180,10 +165,8 @@ def article(id):
 @login_required
 def add_articles():
     db_sess = db_session.create_session()
-    breadcrumbs = get_breadcrumbs(request.path)
     form = ArticlesForm()
 
-    # собираем все уникальные категории
     all_categories = sorted({a.category for a in db_sess.query(Articles).all() if a.category})
 
     if form.validate_on_submit():
@@ -199,7 +182,6 @@ def add_articles():
 
     return render_template('add_article.html',
                            title='Добавление темы',
-                           breadcrumbs=breadcrumbs,
                            form=form,
                            sections=sections[:sections_limiter],
                            all_categories=all_categories)
@@ -241,7 +223,6 @@ def edit_articles(id):
     return render_template('add_article.html',
                            title='Редактирование темы',
                            form=form,
-                           breadcrumbs=get_breadcrumbs(request.path),
                            sections=sections[:sections_limiter],
                            all_categories=all_categories)
 
@@ -261,13 +242,11 @@ def articles_delete(id):
     return redirect('/forum')
 
 
-# @application.route('/forum/<forum_name>')
-# def forum(forum_name):
-#     breadcrumbs = get_breadcrumbs(request.path)
-#     return render_template('base.html',
-#                            title=f'Форум {forum_name.capitalize()}',
-#                            breadcrumbs=breadcrumbs,
-#                            sections=sections[:sections_limiter])
+@application.route('/profile')
+def self_profile():
+    if current_user.is_authenticated:
+        return redirect(f'/profile/{current_user.username}')
+    return redirect('/login')
 
 
 @application.route('/profile/<username>', methods=['GET', 'POST'])
@@ -279,7 +258,6 @@ def profile(username):
 
     form = EditProfileForm(obj=user)
     edit_mode = request.args.get('edit') == '1'
-    breadcrumbs = get_breadcrumbs(request.path)
 
     if form.validate_on_submit() and user.id == current_user.id:
         if form.age.data <= 10 or form.age.data >= 100:
@@ -288,7 +266,6 @@ def profile(username):
                                    form=form,
                                    edit_mode=edit_mode,
                                    title=user.username,
-                                   breadcrumbs=breadcrumbs,
                                    user=user,
                                    message="Пожалуйста, введите корректный возраст.")
         file = form.photo.data
@@ -322,13 +299,11 @@ def profile(username):
                            form=form,
                            edit_mode=edit_mode,
                            title=user.username,
-                           breadcrumbs=breadcrumbs,
                            sections=sections[:sections_limiter])
 
 
 @application.route('/login', methods=['GET', 'POST'])
 def login():
-    breadcrumbs = get_breadcrumbs(request.path)
     form = LoginForm()
     if form.validate_on_submit():
         db_sess = db_session.create_session()
@@ -341,19 +316,16 @@ def login():
         if user is None:
             return render_template('login.html',
                                    message="Пользователь не найден",
-                                   breadcrumbs=breadcrumbs,
                                    form=form,
                                    sections=sections[:sections_limiter])
 
         return render_template('login.html',
                                message="Неправильный пароль",
-                               breadcrumbs=breadcrumbs,
                                form=form,
                                sections=sections[:sections_limiter])
 
     return render_template('login.html',
                            title='Авторизация',
-                           breadcrumbs=breadcrumbs,
                            form=form,
                            sections=sections[:sections_limiter])
 
@@ -374,7 +346,6 @@ def change_profile():
 
 @application.route('/registration', methods=['GET', 'POST'])
 def registration():
-    breadcrumbs = get_breadcrumbs(request.path)
     form = RegisterForm()
     if form.validate_on_submit():
         if form.password.data != form.confirm_password.data:
@@ -382,7 +353,6 @@ def registration():
             return render_template('registration.html',
                                    title='Регистрация',
                                    form=form,
-                                   breadcrumbs=breadcrumbs,
                                    message="Пароли не совпадают")
 
         db_sess = db_session.create_session()
@@ -390,14 +360,12 @@ def registration():
             return render_template('registration.html',
                                    title='Регистрация',
                                    form=form,
-                                   breadcrumbs=breadcrumbs,
                                    message="Такой пользователь уже есть")
 
         if db_sess.query(User).filter(User.username == form.username.data).first():
             return render_template('registration.html',
                                    title='Регистрация',
                                    form=form,
-                                   breadcrumbs=breadcrumbs,
                                    message="Логин занят")
         try:
             user = User(
@@ -414,11 +382,9 @@ def registration():
             return render_template('registration.html',
                                    title='Регистрация',
                                    form=form,
-                                   breadcrumbs=breadcrumbs,
                                    message="Произошла ошибка при регистрации. Попробуйте еще раз.")
     return render_template('registration.html',
                            title='Регистрация',
-                           breadcrumbs=breadcrumbs,
                            form=form,
                            sections=sections[:sections_limiter])
 
@@ -459,23 +425,6 @@ def time_ago(dt):
         return f"{minutes} мин. назад"
     else:
         return "только что"
-
-
-def get_breadcrumbs(path):
-    breadcrumbs = [{'title': 'Главная', 'url': '/'}]
-    path_parts = path.strip('/').split('/')
-    full_url = ''
-
-    for i in range(len(path_parts)):
-        full_url = '/' + '/'.join(path_parts[:i + 1])
-        match = next((s for s in sections if s['url'] == full_url), None)
-        if match:
-            if not any(b['url'] == match['url'] for b in breadcrumbs):
-                breadcrumbs.append({'title': match['title'], 'url': match['url']})
-
-    if not any(b['url'] == path for b in breadcrumbs):
-        breadcrumbs.append({'title': path_parts[-1].capitalize(), 'url': path})
-    return breadcrumbs
 
 
 def main():

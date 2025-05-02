@@ -25,6 +25,8 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
     photo = sqlalchemy.Column(sqlalchemy.String, nullable=True)  # Фото
     created_date = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now)  # Дата создания аккаута
 
+    # subscribers = sqlalchemy.Column(sqlalchemy.String, nullable=True)  # новая колонка, которая вызывает ошибку
+
     def __repr__(self):
         return f'<User> with id:{self.id} - {self.surname} {self.name} {self.position}-{self.speciality}'
 

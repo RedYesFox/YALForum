@@ -34,10 +34,18 @@
 
             <div class="buttons">
                 <button type="submit" class="btn btn-success">Применить</button>
-                <button type="button" class="btn btn-warning" onclick="window.location.href='{{ url_for('forum_main') }}'">Очистить</button>
+                <button type="button" class="btn btn-warning"
+                onclick="window.location.href='{{ url_for('forum_main') }}'">Очистить</button>
             </div>
         </div>
     </form>
+    {% if current_user.is_authenticated %}
+    <div class="new_post_button">
+        <!-- <a href="/forum/articles/add"><h>&plus;</h> Создать пост</a> -->
+        <button type="button" class="btn btn-success"
+        onclick="window.location.href='{{ url_for('add_articles') }}'">&plus; Создать пост</button>
+    </div>
+    {% endif %}
 
 
     {% for item in articles %}
@@ -76,15 +84,15 @@
 {% endfor %}
 </div>
 
-<div class="sidebar__right">
-    <h2>Популярные темы</h2>
+<!-- <div class="sidebar__right"> -->
+    <!-- <h2>Популярные темы</h2> -->
     <!-- <ul class="sidebar__menu">
         {% for section in sections %}
         <li><a href="{{ section.url }}">{{ section.title }}</a></li>
         {% endfor %}
     </ul> -->
 
-</div>
+<!-- </div> -->
 
 
 {% block extra_style %}
@@ -92,8 +100,9 @@
         .article {
             background-color: rgb(23,23,23);
             border: 1px solid rgba(132, 179, 0, 0.2);
+            border-radius: 12px;
             padding: 10px;
-            margin-bottom: 1rem;
+            margin-bottom: 10px;
         }
         .article:hover {
             border: 1px solid rgba(132, 179, 0, 0.6);
@@ -119,22 +128,14 @@
             align-items: center;
             gap: 1rem;
         }
-        /* .user-info__right {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-            align-items: flex-end;
-        } */
 
         form {
             display: flex;
             flex-direction: column;
             gap: 1rem;
-            margin-bottom: 1rem;
+            margin: 0 0 1rem 0;
             width: 100%;
-            border-bottom-left-radius: 0;
-            border-bottom-right-radius: 0;
-            border: 1px solid rgba(132, 179, 0, 0.2);
+            border: 1px solid rgba(0, 179, 140, 0.2);
         }
 
         .search-filters {
@@ -142,6 +143,32 @@
             width: 100%;
             gap: 1rem;
             justify-content: space-between;
+        }
+
+        .new_post_button {
+            display: flex;
+            justify-content: center;
+            background-color: rgb(23,23,23);
+            border: 1px solid rgba(0, 179, 140, 0.2);
+            border-radius: 12px;
+            padding: 10px;
+            margin-bottom: 1.4rem;
+        }
+
+        .new_post_button button {
+            color: white;
+            border: none;
+        }
+
+        .new_post_button button:hover {
+            border-radius: 10px;
+            transition: 600ms;
+            font-size: 20px;
+        }
+
+        .new_post_button button:not(:hover) {
+            transition: 600ms;
+
         }
 
     </style>
