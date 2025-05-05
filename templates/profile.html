@@ -40,6 +40,11 @@
                 </p>
             </div>
         </div>
+        <div class="follow-info" style="margin: 1rem 0;">
+            <b>{{ user.subscribers | length }}</b> подписчиков |
+            <b>{{ user.subscriptions | length }}</b> подписок
+        </div>
+
         <h4>Email: <b>{{ user.email }}</b></h4>
         <h4>Дата регистрации: <b>{{ user.created_date.date().strftime('%d.%m.%Y') }}</b></h4>
         <div class="page">
@@ -80,75 +85,152 @@
             {% endif %}
         </p>
 
-        <p>
-            Возраст:
+            <p>
+                Возраст:
+                {% if edit_mode %}
+                    {{ form.age(class="form-control") }}
+                    {% for error in form.age.errors %}
+                        <div class="alert alert-danger" role="alert">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    {% if user.age %} <b>{{ user.age }}</b> {% else %} не указан {% endif %}
+                {% endif %}
+            </p>
+            <p>
+                Должность:
+                {% if edit_mode %}
+                    {{ form.position(class="form-control") }}
+                    {% for error in form.position.errors %}
+                        <div class="alert alert-danger" role="alert">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    {% if user.position %} <b>{{ user.position }}</b> {% else %} не указан {% endif %}
+                {% endif %}
+
+            </p>
+            <p>
+                Специальность:
+                {% if edit_mode %}
+                    {{ form.speciality(class="form-control") }}
+                    {% for error in form.speciality.errors %}
+                        <div class="alert alert-danger" role="alert">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    {% if user.speciality %} <b>{{ user.speciality }}</b> {% else %} не указана {% endif %}
+                {% endif %}
+            </p>
+
+            <p>
+                Адрес:
+                {% if edit_mode %}
+                    {{ form.address(class="form-control") }}
+                    {% for error in form.address.errors %}
+                        <div class="alert alert-danger" role="alert">
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    {% if user.address %} <b>{{ user.address }}</b> {% else %} не указан {% endif %}
+                {% endif %}
+            </p>
+
             {% if edit_mode %}
-                {{ form.age(class="form-control") }}
-                {% for error in form.age.errors %}
-                    <div class="alert alert-danger" role="alert">
-                        {{ error }}
-                    </div>
-                {% endfor %}
-            {% else %}
-                {% if user.age %} <b>{{ user.age }}</b> {% else %} не указан {% endif %}
-            {% endif %}
-        </p>
-        <p>
-            Должность:
-            {% if edit_mode %}
-                {{ form.position(class="form-control") }}
-                {% for error in form.position.errors %}
-                    <div class="alert alert-danger" role="alert">
-                        {{ error }}
-                    </div>
-                {% endfor %}
-            {% else %}
-                {% if user.position %} <b>{{ user.position }}</b> {% else %} не указан {% endif %}
+                <p>{{ form.submit(class="btn btn-success") }}</p>
             {% endif %}
 
-        </p>
-        <p>
-            Специальность:
-            {% if edit_mode %}
-                {{ form.speciality(class="form-control") }}
-                {% for error in form.speciality.errors %}
-                    <div class="alert alert-danger" role="alert">
-                        {{ error }}
-                    </div>
-                {% endfor %}
-            {% else %}
-                {% if user.speciality %} <b>{{ user.speciality }}</b> {% else %} не указана {% endif %}
+            {% if current_user.is_authenticated and current_user.id == user.id and not edit_mode %}
+                <!-- <button type="button" class="btn btn-warning" onclick="window.location.href='{{ url_for('profile', username=user.username, edit=1) }}'">Редактировать профиль</button> -->
+                <a href="{{ url_for('profile', username=user.username, edit=1) }}" class="btn btn-warning">Редактировать профиль</a>
             {% endif %}
-        </p>
-
-        <p>
-            Адрес:
-            {% if edit_mode %}
-                {{ form.address(class="form-control") }}
-                {% for error in form.address.errors %}
-                    <div class="alert alert-danger" role="alert">
-                        {{ error }}
-                    </div>
-                {% endfor %}
-            {% else %}
-                {% if user.address %} <b>{{ user.address }}</b> {% else %} не указан {% endif %}
-            {% endif %}
-        </p>
-
-        {% if edit_mode %}
-            <p>{{ form.submit(class="btn btn-success") }}</p>
-        {% endif %}
-
-        {% if current_user.is_authenticated and current_user.id == user.id and not edit_mode %}
-            <a href="{{ url_for('profile', username=user.username, edit=1) }}" class="btn btn-warning">Редактировать профиль</a>
-        {% endif %}
         </div>
     </form>
+    {% if current_user.is_authenticated and current_user.id != user.id %}
+        {% if current_user in user.subscribers %}
+            <form method="post" action="{{ url_for('unsubscribe', user_id=user.id) }}">
+                <button type="submit" class="btn btn-warning">Отписаться</button>
+            </form>
+        {% else %}
+            <form method="post" action="{{ url_for('subscribe', user_id=user.id) }}">
+                <button type="submit" class="btn btn-success">Подписаться</button>
+            </form>
+        {% endif %}
+    {% endif %}
+    <div class="page">
+        <h3>Статьи пользователя</h3>
+        {% for article in user.articles %}
+            <a href="{{ url_for('article', id=article.id) }}">{{ article.title }}</a>
+            {% if not loop.last %}
+                <hr style="border-color: #444;">
+            {% endif %}
+        {% else %}
+            Пользователь пока не опубликовал статей.
+        {% endfor %}
+    </div>
+    <div class="page">
+        <h3>Друзья</h3>
+        {% if friends %}
+            <div class="friends-panel">
+                {% for friend in friends %}
+                    <a href="{{ url_for('profile', username=friend.username) }}">
+                        <div class="friend-item">
+                            {% if friend.photo %}
+                                <div style="width: 60px; height: 60px; overflow: hidden; border-radius: 50%;">
+                                    <img src="{{ url_for('static', filename=friend.photo) }}"
+                                        alt="Фото профиля"
+                                        style="width: 100%; height: 100%; object-fit: cover;">
+                                </div>
+                            {% else %}
+                                <div style="width: 60px; height: 60px; overflow: hidden; border-radius: 50%;">
+                                    <img src="{{ url_for('static', filename='images/anonim-icon.png') }}"
+                                        alt="Фото профиля"
+                                        style="width: 100%; height: 100%; object-fit: cover;">
+                                </div>
+                            {% endif %}
+                            {% if friend.name %}
+                                {{ friend.name }}
+                            {% else %}
+                                {{ friend.username }}
+                            {% endif %}
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>Пока нет друзей 😢</p>
+        {% endif %}
+    </div>
+
+    {% if current_user.is_authenticated and current_user.id == user.id %}
+        <button class="btn btn-danger" onclick="showDeleteConfirm()">Удалить аккаунт</button>
+
+        <div id="deleteConfirmModal" class="modal" style="display:none;">
+            <div class="modal-content">
+                <p>Вы уверены, что хотите удалить аккаунт? Это действие необратимо.</p>
+                <form method="POST" action="/delete_account">
+                    <button type="submit" class="btn btn-danger">Да, удалить</button>
+                    <button type="button" class="btn btn-primary" onclick="closeDeleteConfirm()">Отмена</button>
+                </form>
+            </div>
+        </div>
+    {% endif %}
 </div>
+
 
 {% block extra_styles %}
     <link rel="icon" href="{{ url_for('static', filename='icons/favicon.ico') }}" type="image/x-icon">
     <style>
+        .page-content a:hover {
+           transition: 700ms;
+            text-decoration: underline;
+            color: #e06b0a;
+        }
+
         .page {
             background-color: rgb(23,23,23);
             border: 1px solid rgba(132, 179, 0, 0.2);
@@ -173,6 +255,43 @@
             margin: 0;
         }
 
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 999;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: rgb(23, 23, 23);
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .modal-content form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .friends-panel {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .friend-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
     </style>
     <script>
         document.getElementById('photoInput')?.addEventListener('change', function(event) {
@@ -193,6 +312,15 @@
             }
         });
     </script>
+    <script>
+        function showDeleteConfirm() {
+            document.getElementById("deleteConfirmModal").style.display = "flex";
+        }
+        function closeDeleteConfirm() {
+            document.getElementById("deleteConfirmModal").style.display = "none";
+        }
+    </script>
+
 
 {% endblock %}
 {% endblock %}

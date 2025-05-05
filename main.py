@@ -2,9 +2,9 @@ import datetime
 import logging
 import os
 import uuid
-from flask import Flask, render_template, redirect, request
+from flask import Flask, render_template, redirect, request, url_for, abort
 from flask_login import current_user, login_required, LoginManager, login_user, logout_user
-from flask_restful import abort
+# from flask_restful import abort
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
 
@@ -257,6 +257,7 @@ def profile(username):
         abort(404)
 
     form = EditProfileForm(obj=user)
+    friends = get_mutual_friends(user)
     edit_mode = request.args.get('edit') == '1'
 
     if form.validate_on_submit() and user.id == current_user.id:
@@ -299,7 +300,42 @@ def profile(username):
                            form=form,
                            edit_mode=edit_mode,
                            title=user.username,
-                           sections=sections[:sections_limiter])
+                           sections=sections[:sections_limiter],
+                           friends=friends)
+
+
+@application.route('/subscribe/<int:user_id>', methods=['POST'])
+@login_required
+def subscribe(user_id):
+    db_sess = db_session.create_session()
+    target = db_sess.query(User).get(user_id)
+    me = db_sess.query(User).get(current_user.id)
+
+    if not target or target.id == current_user.id:
+        abort(404)
+
+    if target not in me.subscriptions:
+        me.subscriptions.append(target)
+        db_sess.commit()
+
+    return redirect(url_for('profile', username=target.username))
+
+
+@application.route('/unsubscribe/<int:user_id>', methods=['POST'])
+@login_required
+def unsubscribe(user_id):
+    db_sess = db_session.create_session()
+    target = db_sess.query(User).get(user_id)
+    me = db_sess.query(User).get(current_user.id)
+
+    if not target or target.id == current_user.id:
+        abort(404)
+
+    if target in me.subscriptions:
+        me.subscriptions.remove(target)
+        db_sess.commit()
+
+    return redirect(url_for('profile', username=target.username))
 
 
 @application.route('/login', methods=['GET', 'POST'])
@@ -342,6 +378,22 @@ def logout():
 def change_profile():
     logout_user()
     return redirect('/login')
+
+
+@application.route('/delete_account', methods=['POST'])
+@login_required
+def delete_account():
+    user = current_user
+    db_sess = db_session.create_session()
+    user = db_sess.merge(user)
+
+    user.subscriptions.clear()
+    user.subscribers.clear()
+
+    db_sess.delete(user)
+    db_sess.commit()
+    logout_user()
+    return redirect('/')
 
 
 @application.route('/registration', methods=['GET', 'POST'])
@@ -425,6 +477,13 @@ def time_ago(dt):
         return f"{minutes} мин. назад"
     else:
         return "только что"
+
+
+def get_mutual_friends(user: User) -> list[User]:
+    following_ids = {u.id for u in user.subscriptions}
+    follower_ids = {u.id for u in user.subscribers}
+    mutual_ids = following_ids & follower_ids
+    return [u for u in user.subscriptions if u.id in mutual_ids]
 
 
 def main():

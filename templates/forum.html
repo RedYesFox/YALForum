@@ -34,16 +34,16 @@
 
             <div class="buttons">
                 <button type="submit" class="btn btn-success">Применить</button>
-                <button type="button" class="btn btn-warning"
-                onclick="window.location.href='{{ url_for('forum_main') }}'">Очистить</button>
+                <button type="button" class="btn btn-warning" data-url="{{ url_for('forum_main') }}"
+                onclick="window.location.href=this.dataset.url">Очистить</button>
             </div>
         </div>
     </form>
     {% if current_user.is_authenticated %}
     <div class="new_post_button">
         <!-- <a href="/forum/articles/add"><h>&plus;</h> Создать пост</a> -->
-        <button type="button" class="btn btn-success"
-        onclick="window.location.href='{{ url_for('add_articles') }}'">&plus; Создать пост</button>
+        <button type="button" class="btn btn-success" data-url="{{ url_for('add_articles') }}"
+        onclick="window.location.href=this.dataset.url">&plus; Создать пост</button>
     </div>
     {% endif %}
 
@@ -51,16 +51,20 @@
     {% for item in articles %}
         <div class="article">
             <div class="user-info">
-                <div class="user-info__left">
-                    {% if item.user.photo %}
-                    <div style="width: 40px; height: 40px; overflow: hidden; border-radius: 50%;">
-                        <img src="{{ url_for('static', filename=item.user.photo) }}"
-                            alt="Фото профиля"
-                            style="width: 100%; height: 100%; object-fit: cover;">
+                {% if item.user %}
+                    <div class="user-info__left">
+                        {% if item.user.photo %}
+                        <div style="width: 40px; height: 40px; overflow: hidden; border-radius: 50%;">
+                            <img src="{{ url_for('static', filename=item.user.photo) }}"
+                                alt="Фото профиля"
+                                style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                        {% endif %}
+                        <a href="/profile/{{ item.user.username }}">{{ item.user.username }}</a>
                     </div>
-                    {% endif %}
-                    <a href="/profile/{{ item.user.username }}">{{ item.user.username }}</a>
-                </div>
+                {% else %}
+                    <p>Удалённый пользователь</p>
+                {% endif %}
                 <div class="user-info__right">
                     {{ item.created_date|time_ago }}
                 </div>
