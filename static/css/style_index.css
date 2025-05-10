@@ -78,7 +78,7 @@ header {
 
 
 .nav__sections {
-    background-color: #252525;
+    background-color: rgb(37, 37, 37);
     padding: 0.5rem 1rem;
     width: 100%;
     display: flex;
@@ -239,7 +239,7 @@ main {
 .footer__right a:hover {
     transition: 700ms;
     text-decoration: underline;
-    color: #e06b0a;
+    color: rgb(224, 107, 10);
 }
 
 form {
@@ -299,7 +299,7 @@ button,
     width: 100%;
     padding: 10px;
     color: rgb(0, 123, 255);
-    border: 1px solid #007bff;
+    border: 1px solid rgb(0, 123, 255);
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.6s;
@@ -375,6 +375,12 @@ button:hover,
     height: 100%;
 } */
 
+.page {
+    background-color: rgb(23,23,23);
+    border: 1px solid rgba(132, 179, 0, 0.2);
+    border-radius: 10px;
+    padding: 1rem;
+}
 
 @media (max-width: 768px) {
     header,
@@ -440,6 +446,17 @@ button:hover,
     .user-info h2,
     .user-info p {
         font-size: 14px;
+    }
+
+    .page-1 {
+        flex-direction: column-reverse;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .page-1 .page-1-right,
+    .page-1 .page-1-left {
+        width: 100%;
     }
 
 }

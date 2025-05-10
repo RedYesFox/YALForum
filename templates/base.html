@@ -23,13 +23,11 @@
                 <nav class="header__user-nav">
                     <div class="user-menu">
                         {% if current_user.is_authenticated %}
-                            {% if current_user.photo %}
                             <div style="width: 60px; height: 60px; overflow: hidden; border-radius: 50%;">
                                 <img src="{{ url_for('static', filename=current_user.photo) }}"
                                     alt="Фото профиля"
                                     style="width: 100%; height: 100%; object-fit: cover;">
                             </div>
-                            {% endif %}
                             <a href="#" id="user-name">{{ current_user.username }}</a>
                             <div class="dropdown-menu">
                                 {% if current_user.surname and current_user.name %}

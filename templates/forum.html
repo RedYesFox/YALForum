@@ -51,20 +51,19 @@
     {% for item in articles %}
         <div class="article">
             <div class="user-info">
-                {% if item.user %}
-                    <div class="user-info__left">
-                        {% if item.user.photo %}
-                        <div style="width: 40px; height: 40px; overflow: hidden; border-radius: 50%;">
-                            <img src="{{ url_for('static', filename=item.user.photo) }}"
-                                alt="Фото профиля"
-                                style="width: 100%; height: 100%; object-fit: cover;">
-                        </div>
-                        {% endif %}
-                        <a href="/profile/{{ item.user.username }}">{{ item.user.username }}</a>
-                    </div>
+                {% if not item.user %}
+                    {% set user = users|selectattr('username', '==', 'DeletedAccount')|first %}
                 {% else %}
-                    <p>Удалённый пользователь</p>
+                    {% set user = item.user %}
                 {% endif %}
+                <div class="user-info__left">
+                    <div style="width: 40px; height: 40px; overflow: hidden; border-radius: 50%;">
+                        <img src="{{ url_for('static', filename=user.photo) }}"
+                            alt="Фото профиля"
+                            style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                    <a href="/profile/{{ user.username }}">{{ user.username}}</a>
+                </div>
                 <div class="user-info__right">
                     {{ item.created_date|time_ago }}
                 </div>

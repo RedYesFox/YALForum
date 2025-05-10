@@ -14,5 +14,5 @@ class Comment(SqlAlchemyBase):
     user_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('users.id'))
     article_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey('articles.id'))
 
-    user = orm.relationship('User')
+    user = orm.relationship('User', back_populates="comments")
     article = orm.relationship('Articles')

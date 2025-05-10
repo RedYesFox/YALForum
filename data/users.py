@@ -27,17 +27,15 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
     surname = sqlalchemy.Column(sqlalchemy.String, nullable=True)  # Фамилия
     name = sqlalchemy.Column(sqlalchemy.String, nullable=True)  # Имя
     age = sqlalchemy.Column(sqlalchemy.Integer, nullable=True)  # Возраст
-    position = sqlalchemy.Column(sqlalchemy.String, nullable=True)  # Должность
+    position = sqlalchemy.Column(sqlalchemy.String, nullable=False, default='user')  # Должность
     speciality = sqlalchemy.Column(sqlalchemy.String, nullable=True)  # Специализация
     address = sqlalchemy.Column(sqlalchemy.String, nullable=True)  # Адрес
     about = sqlalchemy.Column(sqlalchemy.Text, nullable=True)  # О себе
 
-    photo = sqlalchemy.Column(sqlalchemy.String, nullable=True)  # Фото
+    photo = sqlalchemy.Column(sqlalchemy.String, nullable=False,
+                              default='/images/anonim-icon.png')  # Фото
     created_date = sqlalchemy.Column(
         sqlalchemy.DateTime, default=datetime.datetime.now)  # Дата создания аккаута
-
-    # subscribers = sqlalchemy.Column(sqlalchemy.String, nullable=True)  # Id`s подписчиков
-    # subscriptions = sqlalchemy.Column(sqlalchemy.String, nullable=True)  # Id`s подписок
 
     subscriptions = relationship(
         'User',
@@ -48,6 +46,7 @@ class User(SqlAlchemyBase, UserMixin, SerializerMixin):
     )
 
     articles = relationship("Articles", back_populates="user")
+    comments = relationship("Comment", back_populates="user")
 
     def __repr__(self):
         return f'<User> with id:{self.id}'

@@ -141,6 +141,7 @@ def article(id):
 
     comments = db_sess.query(Comment).filter(
         Comment.article_id == article.id).order_by(Comment.created_date.desc()).all()
+    all_users = db_sess.query(User).all()
 
     form = CommentForm()
     if form.validate_on_submit() and current_user.is_authenticated:
@@ -158,7 +159,21 @@ def article(id):
                            form=form,
                            comments=comments,
                            title=article.title,
+                           users=all_users,
                            sections=sections[:sections_limiter])
+
+
+@application.route('/forum/articles/<int:article_id>/comment_delete/<int:comment_id>',
+                   methods=['GET', 'POST'])
+@login_required
+def delete_comment(article_id, comment_id):
+    db_sess = db_session.create_session()
+    comment = db_sess.query(Comment).filter(Comment.id == comment_id,
+                                            Comment.article_id == article_id).first()
+    if comment and (comment.user == current_user or current_user.is_admin):
+        db_sess.delete(comment)
+        db_sess.commit()
+    return redirect(f'/forum/articles/{article_id}')
 
 
 @application.route('/forum/articles/add', methods=['GET', 'POST'])
@@ -261,39 +276,42 @@ def profile(username):
     edit_mode = request.args.get('edit') == '1'
 
     if form.validate_on_submit() and user.id == current_user.id:
-        if form.age.data <= 10 or form.age.data >= 100:
-            form.age.errors.append('Возраст должен быть в диапазоне от 10 до 100 лет.')
-            return render_template('profile.html',
-                                   form=form,
-                                   edit_mode=edit_mode,
-                                   title=user.username,
-                                   user=user,
-                                   message="Пожалуйста, введите корректный возраст.")
-        file = form.photo.data
-        if isinstance(file, FileStorage) and file.filename:
-            filename = secure_filename(file.filename)
-            unique_filename = f"{uuid.uuid4().hex}_{filename}"
-            file_path = os.path.join(application.config['UPLOAD_FOLDER'], unique_filename)
-            file.save(file_path)
+        if form.submit.data:
+            if form.age.data <= 10 or form.age.data >= 100:
+                form.age.errors.append('Возраст должен быть в диапазоне от 10 до 100 лет.')
+                return render_template('profile.html',
+                                       form=form,
+                                       edit_mode=edit_mode,
+                                       title=user.username,
+                                       user=user,
+                                       message="Пожалуйста, введите корректный возраст.")
+            file = form.photo.data
+            if isinstance(file, FileStorage) and file.filename:
+                filename = secure_filename(file.filename)
+                unique_filename = f"{uuid.uuid4().hex}_{filename}"
+                file_path = os.path.join(application.config['UPLOAD_FOLDER'], unique_filename)
+                file.save(file_path)
 
-            if user.photo and isinstance(user.photo, str):
-                old_path = os.path.join(application.static_folder, user.photo.replace('/', os.sep))
+                if user.photo and isinstance(user.photo, str):
+                    old_path = os.path.join(application.static_folder,
+                                            user.photo.replace('/', os.sep))
 
-                print(old_path)
-                if os.path.exists(old_path):
-                    os.remove(old_path)
+                    if os.path.exists(old_path):
+                        os.remove(old_path)
 
-            user.photo = os.path.join('uploads', unique_filename).replace('\\', '/')
-        user.name = form.name.data
-        user.surname = form.surname.data
-        user.age = form.age.data
-        user.about = form.about.data
-        user.position = form.position.data
-        user.speciality = form.speciality.data
-        user.address = form.address.data
+                user.photo = os.path.join('uploads', unique_filename).replace('\\', '/')
+            user.name = form.name.data
+            user.surname = form.surname.data
+            user.age = form.age.data
+            user.about = form.about.data
+            user.position = form.position.data
+            user.speciality = form.speciality.data
+            user.address = form.address.data
 
-        db_sess.commit()
-        return redirect(f'/profile/{username}')
+            db_sess.commit()
+            return redirect(f'/profile/{username}')
+        else:
+            return redirect(f'/profile/{username}')
 
     return render_template("profile.html",
                            user=user,

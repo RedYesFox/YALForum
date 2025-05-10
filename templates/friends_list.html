@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-content">
+    <form method="get" class="mb-3">
+        <input type="text" name="q" placeholder="Поиск..." class="form-control"
+               value="{{ request.args.get('q', '') }}" style="width: 100%">
+
+        <div class="buttons">
+            <button type="submit" class="btn btn-success">Поиск</button>
+        </div>
+    </form>
+    <div class="page">
+        {% if friends %}
+            <div class="friends-list">
+                {% for friend in friends %}
+                    <div class="friend-item">
+                        <a href="{{ url_for('profile', username=friend.username) }}">
+                                <img src="{{ url_for('static', filename=friend.photo) }}"
+                                    alt="Фото профиля"
+                                    style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover;">
+                            <div>{{ friend.name or friend.username }}</div>
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p>Нет результатов😢</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

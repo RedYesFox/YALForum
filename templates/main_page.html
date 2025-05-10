@@ -30,19 +30,11 @@
     <div class="sidebar__menu">
         {% for user in users %}
             <div class="sidebar__item" style="display: flex; align-items: center; gap: 1rem;">
-                {% if user.photo %}
-                    <div style="width: 25px; height: 25px; overflow: hidden; border-radius: 50%;">
-                        <img src="{{ url_for('static', filename=user.photo) }}"
-                            alt="Фото профиля"
-                            style="width: 100%; height: 100%; object-fit: cover;">
-                    </div>
-                {% else %}
-                    <div style="width: 25px; height: 25px; overflow: hidden; border-radius: 50%;">
-                        <img src="{{ url_for('static', filename='images/anonim-icon.png') }}"
-                            alt="Фото профиля"
-                            style="width: 100%; height: 100%; object-fit: cover;">
-                    </div>
-                {% endif %}
+                <div style="width: 25px; height: 25px; overflow: hidden; border-radius: 50%;">
+                    <img src="{{ url_for('static', filename=user.photo) }}"
+                        alt="Фото профиля"
+                        style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
                 <a href="/profile/{{ user.username }}">{{ user.username }}</a>
             </div>
             <br>
