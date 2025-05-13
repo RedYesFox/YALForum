@@ -360,7 +360,7 @@ def self_subscriptions(username):
     if not username:
         user = current_user
     elif username == current_user.username:
-        return redirect('/sbscriptions')
+        return redirect('/subscriptions')
     else:
         user = db_sess.query(User).filter(User.username == username).first()
         if not user:
