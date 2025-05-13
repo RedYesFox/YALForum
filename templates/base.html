@@ -31,11 +31,17 @@
                             <a href="#" id="user-name">{{ current_user.username }}</a>
                             <div class="dropdown-menu">
                                 {% if current_user.surname and current_user.name %}
-                                    <p>{{current_user.surname.capitalize()[0]}}.{{ current_user.name }}</p>
+                                    <p style="color: rgb(224, 107, 10); font-weight: 800;">{{current_user.surname.capitalize()[0]}}. {{ current_user.name }}</p>
                                 {% endif %}
-                                <a href="/profile/{{ current_user.username }}">Профиль</a>
-                                <a href="/change_account">Сменить аккаунт</a>
-                                <a href="/logout">Выйти</a>
+                                <a href="/profile/{{ current_user.username }}">
+                                    <img src="{{ url_for('static', filename='/icons/account_circle.svg') }}" alt="" class="nav-icon">Профиль
+                                </a>
+                                <a href="/change_account">
+                                    <img src="{{ url_for('static', filename='/icons/change_account_icon.svg') }}" alt="" class="nav-icon">Сменить аккаунт
+                                </a>
+                                <a href="/logout">
+                                    <img src="{{ url_for('static', filename='/icons/logout_icon.svg') }}" alt="" class="nav-icon">Выйти
+                                </a>
                             </div>
                         {% else %}
                             <a href="/login" class="login-button">Log In</a>
@@ -49,6 +55,7 @@
     <div class="nav__sections">
         {% for section in sections %}
         <a href="{{ section.url }}" class="{% if section.url == request.path %}active{% endif %}">
+            <img src="{{ url_for('static', filename=section.icon) }}" alt="" class="nav-icon">
             {{ section.title }}
         </a>
         {% endfor %}

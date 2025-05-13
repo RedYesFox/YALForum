@@ -5,6 +5,7 @@ import uuid
 from flask import Flask, render_template, redirect, request, url_for, abort
 from flask_login import current_user, login_required, LoginManager, login_user, logout_user
 # from flask_restful import abort
+from sqlalchemy import func
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
 
@@ -19,6 +20,7 @@ from data.comment_form import CommentForm
 from data.comments import Comment
 from data.feedback_form import FeedbackForm
 from data.feedbacks import Feedback
+from data.votes import ArticleVote
 
 application = Flask(__name__)
 application.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
@@ -32,19 +34,19 @@ login_manager.init_app(application)
 logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
 
 sections = [
-    {'title': 'Профиль', 'url': '/profile'},
-    {'title': 'Форум', 'url': '/forum'},
-    {'title': 'Друзья', 'url': '/friends'},
-    {'title': 'Подписки', 'url': '/subscriptions'},
-    {'title': 'О нас', 'url': '/about'},
-    {'title': 'Обратная связь', 'url': '/feedback'},
-    {'title': 'Главная', 'url': '/'},
-    {'title': 'Добавить тему', 'url': '/forum/articles/add'},
-    {'title': 'Регистрация', 'url': '/registration'},
-    {'title': 'Авторизация', 'url': '/login'},
-    {'title': 'Профиль пользователя', 'url': '/profile'},
-    {'title': 'Редактирование темы', 'url': '/forum/articles/edit'},
-    {'title': 'Удалить тему', 'url': '/forum/articles/delete'}
+    {'title': 'Профиль', 'url': '/profile', 'icon': 'icons/account_icon.svg'},
+    {'title': 'Форум', 'url': '/forum', 'icon': 'icons/forum_icon.svg'},
+    {'title': 'Друзья', 'url': '/friends', 'icon': 'icons/friends_icon.svg'},
+    {'title': 'Подписки', 'url': '/subscriptions', 'icon': 'icons/subscriptions_icon.svg'},
+    {'title': 'О нас', 'url': '/about', 'icon': 'icons/info_about_icon.svg'},
+    {'title': 'Обратная связь', 'url': '/feedback', 'icon': 'icons/feedback_icon.svg'},
+    {'title': 'Главная', 'url': '/', 'icon': 'icons/home.svg'},
+    {'title': 'Добавить тему', 'url': '/forum/articles/add', 'icon': 'icons/plus.svg'},
+    {'title': 'Регистрация', 'url': '/registration', 'icon': 'icons/register.svg'},
+    {'title': 'Авторизация', 'url': '/login', 'icon': 'icons/login.svg'},
+    {'title': 'Профиль пользователя', 'url': '/profile', 'icon': 'icons/user.svg'},
+    {'title': 'Редактирование темы', 'url': '/forum/articles/edit', 'icon': 'icons/edit.svg'},
+    {'title': 'Удалить тему', 'url': '/forum/articles/delete', 'icon': 'icons/delete.svg'},
 ]
 
 sections_limiter = -7
@@ -98,7 +100,7 @@ def forum_main():
     db_sess = db_session.create_session()
     query = request.args.get('q', '').strip()
     author = request.args.get('author')
-    sort = request.args.get('sort', 'newest')
+    sort = request.args.get('sort', 'popular')
     category = request.args.get('category', '').strip()
 
     all_categories = sorted({a.category for a in db_sess.query(Articles).all() if a.category})
@@ -119,6 +121,15 @@ def forum_main():
         articles_query = articles_query.join(Articles.user).filter(User.username == author)
     if sort == 'oldest':
         articles_query = articles_query.order_by(Articles.created_date.asc())
+    elif sort == 'popular':
+        vote_subquery = db_sess.query(
+            ArticleVote.article_id,
+            func.sum(ArticleVote.vote).label('score')
+        ).group_by(ArticleVote.article_id).subquery()
+
+        articles_query = articles_query.outerjoin(
+            vote_subquery, Articles.id == vote_subquery.c.article_id
+        ).order_by(func.coalesce(vote_subquery.c.score, 0).desc())
     else:
         articles_query = articles_query.order_by(Articles.created_date.desc())
     articles = articles_query.all()
@@ -142,6 +153,8 @@ def article(id):
     comments = db_sess.query(Comment).filter(
         Comment.article_id == article.id).order_by(Comment.created_date.desc()).all()
     all_users = db_sess.query(User).all()
+    likes = sum(v.vote == 1 for v in article.votes)
+    dislikes = sum(v.vote == -1 for v in article.votes)
 
     form = CommentForm()
     if form.validate_on_submit() and current_user.is_authenticated:
@@ -160,7 +173,49 @@ def article(id):
                            comments=comments,
                            title=article.title,
                            users=all_users,
-                           sections=sections[:sections_limiter])
+                           sections=sections[:sections_limiter],
+                           likes=likes,
+                           dislikes=dislikes)
+
+
+@application.route('/article/<int:id>/like', methods=['POST'])
+@login_required
+def like_article(id):
+    db_sess = db_session.create_session()
+    article = db_sess.query(Articles).get(id)
+    if not article:
+        abort(404)
+    existing_vote = db_sess.query(ArticleVote).filter_by(user_id=current_user.id,
+                                                         article_id=id).first()
+    if existing_vote:
+        if existing_vote.vote == 1:
+            db_sess.delete(existing_vote)
+        else:
+            existing_vote.vote = 1
+    else:
+        db_sess.add(ArticleVote(user_id=current_user.id, article_id=id, vote=1))
+    db_sess.commit()
+    return redirect(f'/forum/articles/{id}')
+
+
+@application.route('/article/<int:id>/dislike', methods=['POST'])
+@login_required
+def dislike_article(id):
+    db_sess = db_session.create_session()
+    article = db_sess.query(Articles).get(id)
+    if not article:
+        abort(404)
+    existing_vote = db_sess.query(ArticleVote).filter_by(user_id=current_user.id,
+                                                         article_id=id).first()
+    if existing_vote:
+        if existing_vote.vote == -1:
+            db_sess.delete(existing_vote)
+        else:
+            existing_vote.vote = -1
+    else:
+        db_sess.add(ArticleVote(user_id=current_user.id, article_id=id, vote=-1))
+    db_sess.commit()
+    return redirect(f'/forum/articles/{id}')
 
 
 @application.route('/forum/articles/<int:article_id>/comment_delete/<int:comment_id>',
@@ -262,6 +317,75 @@ def self_profile():
     if current_user.is_authenticated:
         return redirect(f'/profile/{current_user.username}')
     return redirect('/login')
+
+
+@application.route('/friends', defaults={'username': None})
+@application.route('/friends/<username>')
+@login_required
+def self_friends(username):
+    db_sess = db_session.create_session()
+    query = request.args.get('q', '').strip().lower()
+
+    if not username:
+        user = current_user
+    elif username == current_user.username:
+        return redirect('/friends')
+    else:
+        user = db_sess.query(User).filter(User.username == username).first()
+        if not user:
+            abort(404)
+
+    friends = get_mutual_friends(user)
+    if query:
+        friends = [
+            f for f in friends
+            if query in (f.username or '').lower()
+            or query in (f.name or '').lower()
+            or query in (f.surname or '').lower()
+        ]
+
+    return render_template(
+        'friends_list.html',
+        title=f'Друзья {user.username} — {len(friends)} друзей',
+        user=user,
+        friends=friends,
+        sections=sections[:sections_limiter]
+    )
+
+
+@application.route('/subscriptions', defaults={'username': None})
+@application.route('/subscriptions/<username>')
+@login_required
+def self_subscriptions(username):
+    db_sess = db_session.create_session()
+    query = request.args.get('q', '').strip().lower()
+
+    if not username:
+        user = current_user
+    elif username == current_user.username:
+        return redirect('/sbscriptions')
+    else:
+        user = db_sess.query(User).filter(User.username == username).first()
+        if not user:
+            abort(404)
+
+    subscriptions = get_user_subscriptions(user)
+
+    if query:
+        subscriptions = [
+            f for f in subscriptions
+            if query in (f.username or '').lower()
+            or query in (f.name or '').lower()
+            or query in (f.surname or '').lower()
+        ]
+
+    return render_template(
+        'subscriptions_list.html',
+        title=f'Подписки {user.username} — {len(subscriptions)} подписок',
+        user=user,
+        subscriptions=subscriptions,
+        sections=sections[:sections_limiter]
+    )
 
 
 @application.route('/profile/<username>', methods=['GET', 'POST'])
@@ -502,6 +626,11 @@ def get_mutual_friends(user: User) -> list[User]:
     follower_ids = {u.id for u in user.subscribers}
     mutual_ids = following_ids & follower_ids
     return [u for u in user.subscriptions if u.id in mutual_ids]
+
+
+def get_user_subscriptions(user: User) -> list[User]:
+    following_ids = {u.id for u in user.subscriptions}
+    return [u for u in user.subscriptions if u.id in following_ids]
 
 
 def main():

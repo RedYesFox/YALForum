@@ -4,10 +4,10 @@
 <div class="page-content">
 <form action="" method="post">
     {{ form.hidden_tag() }}
-    <h1>{{ title }}</h1>
+    <h1 style="font-family: 'Oswald', sans-serif; color: rgba(187, 252, 9, 0.897);">{{ title }}</h1>
     <p>
-        {{ form.title.label }}<br>
-        {{ form.title(class="form-control") }}<br>
+        <p style="font-size: 22px;">{{ form.title.label }}</p>
+        {{ form.title(class="form-control", placeholder='Поле для ввода') }}<br>
         {% for error in form.title.errors %}
             <p class="alert alert-danger" role="alert">
                 {{ error }}
@@ -15,8 +15,8 @@
         {% endfor %}
     </p>
     <p>
-        {{ form.content.label }}<br>
-        {{ form.content(class="form-control", rows="10", oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'") }}<br>
+        <p style="font-size: 22px;">{{ form.content.label }}</p>
+        {{ form.content(class="form-control", rows="10", oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'", placeholder='Поле для ввода') }}<br>
         {% for error in form.content.errors %}
             <p content="alert alert-danger" role="alert">
                 {{ error }}
@@ -24,9 +24,9 @@
         {% endfor %}
     </p>
     <p>
-        <!-- value="{{ form.category.data }}" -->
-        {{ form.category.label }}<br>
-        <input list="categories" name="category" class="form-control" >
+
+        <p style="font-size: 22px;">{{ form.category.label }}</p>
+        <input list="categories" name="category" class="form-control" placeholder="Вы можете выбрать из существующих, или просто вписать свою">
         <datalist id="categories">
             {% for cat in all_categories %}
                 <option value="{{ cat }}">

@@ -10,7 +10,7 @@
             style="width: 100%; height: 100%; object-fit: cover;">
         </div>
         <div class="user-info__center">
-            <h2><a href="/profile/{{ user.username }}">{{ user.username }}</a></h2>
+            <h2><a href="/profile/{{ user.username }}" style="color: rgb(224, 107, 10);">@{{ user.username }}</a></h2>
             <p>
                 {% if edit_mode %}
                     {{ form.about(class="form-control", placeholder="Статус", maxlength="95", rows=5) }}
@@ -182,7 +182,7 @@
             </form>
 
             <div class="page">
-                <h3>Статьи пользователя</h3>
+                <h3 style="color: rgb(230, 255, 163);">Статьи пользователя</h3>
                 {% for article in user.articles %}
                     <a href="{{ url_for('article', id=article.id) }}">{{ article.title }}</a>
                     {% if not loop.last %}
@@ -196,7 +196,7 @@
         </div>
         <div class="page-1-right">
             <div class="page">
-                <h3><a href="/friends/{{ user.username }}">Друзья <small>{{ friends|length }}</small></a></h3>
+                <h3 ><a href="/friends/{{ user.username }}" style="color: rgb(230, 255, 163);">Друзья <small>{{ friends|length }}</small></a></h3>
                 {% if friends %}
                     <div class="friends-panel">
                         {% for friend in friends[:4] %}
@@ -229,7 +229,7 @@
                 {% endif %}
             </div>
             <div class="page">
-                <h3>Комментарции пользователя под статьями</h3>
+                <h3 style="color: rgb(230, 255, 163);">Комментарции пользователя под статьями</h3>
                 {% for comment in user.comments[:5] %}
                     <a href="{{ url_for('article', id=comment.article.id) }}" style="font-style: italic; font-family: 'Times New Roman', Times, serif; color: rgb(150, 150, 150);">
                         &OpenCurlyDoubleQuote; {{ comment.article.title }} &CloseCurlyDoubleQuote;

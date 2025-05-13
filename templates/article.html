@@ -6,7 +6,7 @@
         {% if not article.user %}
             {% set user = users|selectattr('username', '==', 'DeletedAccount')|first %}
         {% else %}
-            {% set user = item.user %}
+            {% set user = article.user %}
         {% endif %}
         <div class="user-info__left">
             <div style="width: 40px; height: 40px; overflow: hidden; border-radius: 50%;">
@@ -22,6 +22,20 @@
     </div>
     <h1>{{ article.title }}</h1>
     <p>{{ article.content }}</p>
+    <div class="vote-buttons">
+        <form action="{{ url_for('like_article', id=article.id) }}" method="post">
+            <button type="submit" class="btn btn-success" title="Нравится">❤️</button>
+            {{ likes }}
+        </form>
+        <form action="{{ url_for('dislike_article', id=article.id) }}" method="post">
+            <button type="submit" class="btn btn-warning" title="Не нравится">💔</button>
+            {{ dislikes }}
+        </form>
+        <div style="position: relative; display: inline-block;">
+            <button onclick="copyLink(this)" class="btn btn-primary" title="Скопировать ссылку">🔗</button>
+            <div class="toast" style="color: #1e1e1e;">Ссылка скопирована!</div>
+        </div>
+    </div>
     <hr>
     <h3>Комментарии</h3>
 
@@ -87,8 +101,84 @@
             gap: 1rem;
         }
 
+        .toast {
+            position: absolute;
+            bottom: 100%; /* появляется над кнопкой */
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #28a745;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            white-space: nowrap;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            margin-bottom: 8px;
+            z-index: 10;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        .vote-buttons {
+            display: flex;
+            align-items: center;
+            flex-direction: row;
+            gap: 1rem;
+            padding: 5px;
+            height: 60px;
+        }
+
+        .vote-buttons * {
+            font-size: 20px;
+            font-family: 'Oswald', sans-serif;
+            color: rgba(187, 252, 9, 0.897);
+            margin: 0;
+        }
+
+        .vote-buttons form {
+            border: none;
+            display: flex;
+            align-items: center;
+            flex-direction: row;
+            min-width: 65px;
+            width: 65px;
+            padding: 0;
+
+        }
+
+        .vote-buttons button {
+            border: none;
+            background: none;
+            width: fit-content;
+        }
+
+        .vote-buttons button:hover {
+            background: none;
+            border-radius: 50%;
+            border: 1px solid rgb(46, 46, 46);
+        }
 
     </style>
+
+    <script>
+    function copyLink(button) {
+        const container = button.parentElement;
+        const toast = container.querySelector('.toast');
+        navigator.clipboard.writeText(window.location.href).then(() => {
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        });
+    }
+    </script>
+
+
 
 {% endblock %}
 {% endblock %}

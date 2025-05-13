@@ -14,5 +14,6 @@ class Articles(SqlAlchemyBase):
     created_date = sqlalchemy.Column(sqlalchemy.DateTime, default=datetime.datetime.now)
     category = sqlalchemy.Column(sqlalchemy.String, default="Общие", nullable=True)
 
+    votes = orm.relationship("ArticleVote", back_populates="article", cascade="all, delete-orphan")
     user_id = sqlalchemy.Column(sqlalchemy.Integer, sqlalchemy.ForeignKey("users.id"))
     user = orm.relationship('User', back_populates="articles")

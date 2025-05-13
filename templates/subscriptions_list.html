@@ -11,20 +11,27 @@
         </div>
     </form>
     <div class="page">
-        {% if friends %}
-            <div class="friends-list">
-                {% for friend in friends %}
-                    <div class="friend-item">
-                        <div class="friend-item__left">
-                            <a href="{{ url_for('profile', username=friend.username) }}">
-                                    <img src="{{ url_for('static', filename=friend.photo) }}"
+        {% if subscriptions %}
+            <div class="subscriptions-list">
+                {% for subscription in subscriptions %}
+                    {% set sorted_articles = subscription.articles|sort(attribute='created_date', reverse=True) %}
+                    <div class="subscription-item">
+                        <div class="subscription-item__left">
+                            <a href="{{ url_for('profile', username=subscription.username) }}">
+                                    <img src="{{ url_for('static', filename=subscription.photo) }}"
                                         alt="Фото профиля"
                                         style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover;">
-                                <div style="color: rgb(224, 107, 10); font-weight: 800;">@{{ friend.name or friend.username }}</div>
+                                <div style="color: rgb(224, 107, 10); font-weight: 800;">@{{ subscription.name or subscription.username }}</div>
                             </a>
                         </div>
-                        <div class="friend-item__right">
-                            <form action="{{ url_for('unsubscribe', user_id=friend.id) }}" method="post" style="border: none; width: fit-content; margin: 0; padding: 0;">
+                        <div class="subscription-item__right">
+                            {% if sorted_articles %}
+                                <a href="{{ url_for('article', id=subscription.articles[0].id) }}" style="font-size: 18px; font-family: 'Times New Roman', Times, serif; color: rgb(230, 255, 163);">
+                                    &OpenCurlyDoubleQuote; {{ sorted_articles[0].title }} &CloseCurlyDoubleQuote;
+                                </a>
+                                <div style="color: rgb(150, 150, 150);">&Tilde; {{ sorted_articles[0].created_date|time_ago }}</div>
+                            {% endif %}
+                            <form action="{{ url_for('unsubscribe', user_id=subscription.id) }}" method="post" style="border: none; width: fit-content; margin: 0; padding: 0;">
                                 <button type="submit" class="btn btn-warning" style="border: none; margin: 0;" title="Отписаться">❌</button>
                             </form>
                         </div>
@@ -35,7 +42,7 @@
                 {% endfor %}
             </div>
         {% else %}
-            <p>Нет результатов😢</p>
+            <p>Нет результатов</p>
         {% endif %}
     </div>
 </div>
@@ -53,21 +60,21 @@
         width: 70%;
     }
 
-    .friend-item {
+    .subscription-item {
         display: flex;
         flex-direction: row;
         align-items: center;
         gap: 2rem;
     }
 
-    .friend-item__left a {
+    .subscription-item__left a {
         display: flex;
         flex-direction: row;
         align-items: center;
         gap: 1rem;
     }
 
-    .friend-item__right {
+    .subscription-item__right {
         display: flex;
         flex-direction: row;
         align-items: center;
