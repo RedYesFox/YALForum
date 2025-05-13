@@ -1,10 +1,8 @@
 import datetime
-import logging
 import os
 import uuid
 from flask import Flask, render_template, redirect, request, url_for, abort
 from flask_login import current_user, login_required, LoginManager, login_user, logout_user
-# from flask_restful import abort
 from sqlalchemy import func
 from werkzeug.utils import secure_filename
 from werkzeug.datastructures import FileStorage
@@ -22,16 +20,15 @@ from data.feedback_form import FeedbackForm
 from data.feedbacks import Feedback
 from data.votes import ArticleVote
 
-application = Flask(__name__)
-application.config['SECRET_KEY'] = 'yandexlyceum_secret_key'
+application = Flask(__name__)  # создаем приложение
+application.config['SECRET_KEY'] = 'yandexlyceum_secret_key'  # ключ для шифрования
 application.config['PERMANENT_SESSION_LIFETIME'] = datetime.timedelta(
-    days=10
-)
-application.config['UPLOAD_FOLDER'] = os.path.join('static', 'uploads')
+    days=10)  # установка срока действия сессии
+application.config['UPLOAD_FOLDER'] = os.path.join(
+    'static', 'uploads')  # папка для загрузки файлов
 
-login_manager = LoginManager()
+login_manager = LoginManager()  # создаем экземпляр класса LoginManager
 login_manager.init_app(application)
-logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
 
 sections = [
     {'title': 'Профиль', 'url': '/profile', 'icon': 'icons/account_icon.svg'},
@@ -47,12 +44,12 @@ sections = [
     {'title': 'Профиль пользователя', 'url': '/profile', 'icon': 'icons/user.svg'},
     {'title': 'Редактирование темы', 'url': '/forum/articles/edit', 'icon': 'icons/edit.svg'},
     {'title': 'Удалить тему', 'url': '/forum/articles/delete', 'icon': 'icons/delete.svg'},
-]
+]  # список секций сайта
 
 sections_limiter = -7
 
 
-@application.route('/')
+@application.route('/')  # основная страница
 def redirect_main():
     db_sess = db_session.create_session()
     users = db_sess.query(User).all()
@@ -62,20 +59,20 @@ def redirect_main():
                            sections=sections[:sections_limiter])
 
 
-@login_manager.user_loader
+@login_manager.user_loader  # функция загрузки пользователя
 def load_user(user_id):
     db_sess = db_session.create_session()
     return db_sess.query(User).get(user_id)
 
 
-@application.route('/about')
+@application.route('/about')  # страница о нас
 def about():
     return render_template('about.html',
                            title='О нас',
                            sections=sections[:sections_limiter])
 
 
-@application.route('/feedback',  methods=['GET', 'POST'])
+@application.route('/feedback',  methods=['GET', 'POST'])  # страница обратная связь
 def feedback():
     db_sess = db_session.create_session()
 
@@ -95,7 +92,7 @@ def feedback():
                            form=form)
 
 
-@application.route('/forum')
+@application.route('/forum')  # основная страница форум
 def forum_main():
     db_sess = db_session.create_session()
     query = request.args.get('q', '').strip()
@@ -143,7 +140,7 @@ def forum_main():
                            title='Forum')
 
 
-@application.route('/forum/articles/<int:id>', methods=['GET', 'POST'])
+@application.route('/forum/articles/<int:id>', methods=['GET', 'POST'])  # страница с темой
 def article(id):
     db_sess = db_session.create_session()
     article = db_sess.query(Articles).filter(Articles.id == id).first()
@@ -178,7 +175,7 @@ def article(id):
                            dislikes=dislikes)
 
 
-@application.route('/article/<int:id>/like', methods=['POST'])
+@application.route('/article/<int:id>/like', methods=['POST'])  # лайк теме
 @login_required
 def like_article(id):
     db_sess = db_session.create_session()
@@ -198,7 +195,7 @@ def like_article(id):
     return redirect(f'/forum/articles/{id}')
 
 
-@application.route('/article/<int:id>/dislike', methods=['POST'])
+@application.route('/article/<int:id>/dislike', methods=['POST'])  # дизлайк теме
 @login_required
 def dislike_article(id):
     db_sess = db_session.create_session()
@@ -219,7 +216,7 @@ def dislike_article(id):
 
 
 @application.route('/forum/articles/<int:article_id>/comment_delete/<int:comment_id>',
-                   methods=['GET', 'POST'])
+                   methods=['GET', 'POST'])  # удаление комментария
 @login_required
 def delete_comment(article_id, comment_id):
     db_sess = db_session.create_session()
@@ -231,7 +228,7 @@ def delete_comment(article_id, comment_id):
     return redirect(f'/forum/articles/{article_id}')
 
 
-@application.route('/forum/articles/add', methods=['GET', 'POST'])
+@application.route('/forum/articles/add', methods=['GET', 'POST'])  # добавление темы
 @login_required
 def add_articles():
     db_sess = db_session.create_session()
@@ -257,7 +254,7 @@ def add_articles():
                            all_categories=all_categories)
 
 
-@application.route('/forum/articles/edit/<int:id>', methods=['GET', 'POST'])
+@application.route('/forum/articles/edit/<int:id>', methods=['GET', 'POST'])  # редактирование темы
 @login_required
 def edit_articles(id):
     form = ArticlesForm()
@@ -297,7 +294,7 @@ def edit_articles(id):
                            all_categories=all_categories)
 
 
-@application.route('/forum/articles/delete/<int:id>', methods=['GET', 'POST'])
+@application.route('/forum/articles/delete/<int:id>', methods=['GET', 'POST'])  # удаление темы
 @login_required
 def articles_delete(id):
     db_sess = db_session.create_session()
@@ -312,14 +309,14 @@ def articles_delete(id):
     return redirect('/forum')
 
 
-@application.route('/profile')
+@application.route('/profile')  # профиль пользователя
 def self_profile():
     if current_user.is_authenticated:
         return redirect(f'/profile/{current_user.username}')
     return redirect('/login')
 
 
-@application.route('/friends', defaults={'username': None})
+@application.route('/friends', defaults={'username': None})  # друзья пользователя
 @application.route('/friends/<username>')
 @login_required
 def self_friends(username):
@@ -353,7 +350,7 @@ def self_friends(username):
     )
 
 
-@application.route('/subscriptions', defaults={'username': None})
+@application.route('/subscriptions', defaults={'username': None})  # подписки пользователя
 @application.route('/subscriptions/<username>')
 @login_required
 def self_subscriptions(username):
@@ -388,7 +385,7 @@ def self_subscriptions(username):
     )
 
 
-@application.route('/profile/<username>', methods=['GET', 'POST'])
+@application.route('/profile/<username>', methods=['GET', 'POST'])  # профиль пользователя
 def profile(username):
     db_sess = db_session.create_session()
     user = db_sess.query(User).filter(User.username == username).first()
@@ -446,7 +443,7 @@ def profile(username):
                            friends=friends)
 
 
-@application.route('/subscribe/<int:user_id>', methods=['POST'])
+@application.route('/subscribe/<int:user_id>', methods=['POST'])  # подписка на пользователя
 @login_required
 def subscribe(user_id):
     db_sess = db_session.create_session()
@@ -463,7 +460,7 @@ def subscribe(user_id):
     return redirect(url_for('profile', username=target.username))
 
 
-@application.route('/unsubscribe/<int:user_id>', methods=['POST'])
+@application.route('/unsubscribe/<int:user_id>', methods=['POST'])  # отписка от пользователя
 @login_required
 def unsubscribe(user_id):
     db_sess = db_session.create_session()
@@ -508,21 +505,21 @@ def login():
                            sections=sections[:sections_limiter])
 
 
-@application.route('/logout')
+@application.route('/logout')  # выход из аккаунта
 @login_required
 def logout():
     logout_user()
     return redirect("/")
 
 
-@application.route('/change_account')
+@application.route('/change_account')  # смена аккаунта
 @login_required
 def change_profile():
     logout_user()
     return redirect('/login')
 
 
-@application.route('/delete_account', methods=['POST'])
+@application.route('/delete_account', methods=['POST'])  # удаление аккаунта
 @login_required
 def delete_account():
     user = current_user
@@ -538,7 +535,7 @@ def delete_account():
     return redirect('/')
 
 
-@application.route('/registration', methods=['GET', 'POST'])
+@application.route('/registration', methods=['GET', 'POST'])  # регистрация пользователя
 def registration():
     form = RegisterForm()
     if form.validate_on_submit():
@@ -571,8 +568,7 @@ def registration():
             db_sess.add(user)
             db_sess.commit()
             return redirect('/login')
-        except Exception as e:
-            logging.error(f"Ошибка при регистрации пользователя: {e}")
+        except Exception:
             return render_template('registration.html',
                                    title='Регистрация',
                                    form=form,
@@ -583,7 +579,7 @@ def registration():
                            sections=sections[:sections_limiter])
 
 
-@application.errorhandler(Exception)
+@application.errorhandler(Exception)  # обработка ошибок
 def handle_all_exceptions(e):
     return render_template('error.html',
                            title='Ошибка',
@@ -591,7 +587,7 @@ def handle_all_exceptions(e):
                            sections=sections[:sections_limiter]), 500
 
 
-@application.errorhandler(401)
+@application.errorhandler(401)  # обработка ошибок доступа пользователя к странице
 def unauthorized(e):
     return redirect('/login')
 
@@ -604,7 +600,7 @@ def page_not_found(e):
                            sections=sections[:sections_limiter]), 404
 
 
-@application.template_filter('time_ago')
+@application.template_filter('time_ago')  # отображение времени назад
 def time_ago(dt):
     now = datetime.datetime.now()
     diff = now - dt
@@ -621,21 +617,20 @@ def time_ago(dt):
         return "только что"
 
 
-def get_mutual_friends(user: User) -> list[User]:
+def get_mutual_friends(user: User) -> list[User]:  # получение друзей (подписчиков и подписок)
     following_ids = {u.id for u in user.subscriptions}
     follower_ids = {u.id for u in user.subscribers}
     mutual_ids = following_ids & follower_ids
     return [u for u in user.subscriptions if u.id in mutual_ids]
 
 
-def get_user_subscriptions(user: User) -> list[User]:
+def get_user_subscriptions(user: User) -> list[User]:  # получение подписок
     following_ids = {u.id for u in user.subscriptions}
     return [u for u in user.subscriptions if u.id in following_ids]
 
 
-def main():
+def main():  # запуск приложения
     db_session.global_init("db/yforum.db")
-    # db_sess = db_session.create_session()
     application.run(host='0.0.0.0')
 
 
